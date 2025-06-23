@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <title>Zirkus App</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div id="main" class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
+<body class="bg-gradient-to-tr from-yellow-100 to-pink-100 flex items-center justify-center min-h-screen">
+    <div id="main" class="max-w-md w-full bg-white p-6 rounded-2xl shadow-2xl text-center border border-yellow-200">
         <div id="startArea">
-            <h1 class="text-2xl font-bold mb-4 text-center">🎪 Zirkus-Theater MVP</h1>
-            <input id="audience-name" type="text" maxlength="16" placeholder="Dein Name" class="border rounded p-2 w-full mb-3 focus:ring-2 focus:ring-indigo-300 transition" />
+            <h1 class="text-3xl font-bold mb-6 text-pink-700 drop-shadow">🎪 Zirkus Theater App</h1>
+            <input id="audience-name" type="text" maxlength="16" placeholder="Dein Name" class="border rounded-lg p-2 mb-3 w-full focus:ring-2 focus:ring-pink-300 transition">
             <div id="sektorBtns" class="flex gap-2 justify-center mb-3"></div>
-            <button id="startBtn" class="w-full bg-indigo-600 text-white font-bold py-2 rounded disabled:opacity-50" disabled>Start</button>
+            <button id="startBtn" class="bg-pink-600 text-white font-bold px-4 py-2 rounded-lg w-full shadow hover:bg-pink-700 transition disabled:opacity-60" disabled>Start</button>
         </div>
-        <div id="content" class="mt-4 text-center"></div>
+        <div id="content"></div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
