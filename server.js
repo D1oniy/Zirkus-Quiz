@@ -1,40 +1,90 @@
-const express = require('express');
+// Neue Version von server.js mit Namen, Sektor, Quiz und Buzzer
+const express = require("express");
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const http = require("http").createServer(app);
+const io = require("socket.io")(http);
 
-app.use(express.static('public'));
+app.use(express.static("public"));
 
-let audience={}; let screen='start';
-let buzzerFrage=''; let buzzerWinner=null;
-let quiz={frage:'',antworten:[],richtige:0,done:false};
+const fragen = [
+  {
+    frage: "Wie viele verschiedene Plattformen mussten Eltern in der Schulzeit ihres Kindes verstehen lernen?",
+    antworten: ["2", "4", "Niemand weiss es. Nicht mal die Schulleitung.", ""],
+    richtig: 2
+  },
+  {
+    frage: "Was war 2020 DAS Symbol für modernen Schulunterricht?",
+    antworten: ["Whiteboard", "Videokonferenz", "Klassenbuch", ""],
+    richtig: 1
+  },
+  // ... weitere Fragen ...
+];
 
-io.on('connection',sock=>{
-  sock.emit('update-sektoren',['Rot','Blau','Grün','Gelb']);
-  sock.on('register',d=>audience[sock.id]=d);
-  sock.on('audience-join',()=>sock.emit('screen-update',screen,getData(sock.id)));
-  sock.on('buzzer',()=>{
-    if(screen==='buzzer'&&!buzzerWinner&&audience[sock.id]){
-      buzzerWinner=sock.id;
-      io.emit('screen-update','buzzer',{buzzerWinner:audience[sock.id]});
+let currentScreen = "start";
+let currentQuestionIndex = null;
+let buzzerWinner = null;
+let answers = {}; // socket.id -> Antwortindex
+let audience = {}; // socket.id -> { name, sektor, hasBuzzed }
+
+io.on("connection", (socket) => {
+  socket.on("register", ({ name, sektor }) => {
+    audience[socket.id] = { name, sektor, hasBuzzed: false };
+    socket.emit("registered");
+  });
+
+  socket.on("audience-join", () => {
+    if (currentScreen === "buzzer" && currentQuestionIndex !== null) {
+      const q = fragen[currentQuestionIndex];
+      socket.emit("buzzer-question", q.frage);
+    }
+    if (currentScreen === "quiz" && currentQuestionIndex !== null) {
+      const q = fragen[currentQuestionIndex];
+      socket.emit("quiz-start", q.frage, q.antworten);
     }
   });
-  sock.on('quiz-answer',(i)=>{
-    if(screen==='quiz'&&!quiz.done&&audience[sock.id]){
-      // handle count
-      quiz.done=true;
-      io.emit('screen-update','quiz',quiz);
+
+  socket.on("set-screen", (screen, index) => {
+    currentScreen = screen;
+    currentQuestionIndex = index;
+    buzzerWinner = null;
+    answers = {};
+    for (const id in audience) audience[id].hasBuzzed = false;
+
+    if (screen === "buzzer") {
+      const q = fragen[index];
+      io.emit("buzzer-question", q.frage);
+    }
+    if (screen === "quiz") {
+      const q = fragen[index];
+      io.emit("quiz-start", q.frage, q.antworten);
+      setTimeout(() => {
+        io.emit("quiz-end", fragen[index].richtig);
+      }, 20000);
+    }
+    if (screen === "start") {
+      io.emit("reset");
     }
   });
-  sock.on('set-screen',({screen:s,data})=>{ screen=s;
-    if(s==='buzzer') { buzzerWinner=null; buzzerFrage=s.data?.frage||''; }
-    if(s==='quiz'){ quiz={...s.data,done:false}; }
-    io.emit('screen-update',s,getData());
+
+  socket.on("buzzer", () => {
+    const user = audience[socket.id];
+    if (!buzzerWinner && currentScreen === "buzzer" && user && !user.hasBuzzed) {
+      buzzerWinner = `${user.name} (${user.sektor})`;
+      audience[socket.id].hasBuzzed = true;
+      io.emit("buzzer-winner", buzzerWinner);
+    }
+  });
+
+  socket.on("answer", (antwortIndex) => {
+    if (currentScreen === "quiz" && !(socket.id in answers)) {
+      answers[socket.id] = antwortIndex;
+    }
+  });
+
+  socket.on("disconnect", () => {
+    delete audience[socket.id];
   });
 });
 
-function getData(){ if(screen==='buzzer') return {frage:buzzerFrage,buzzerWinner:buzzerWinner?audience[buzzerWinner]:null};
-  if(screen==='quiz') return quiz; return {};
-}
-
-http.listen(5500);
+const PORT = process.env.PORT || 5500;
+http.listen(PORT, () => console.log("Server läuft auf Port", PORT));
