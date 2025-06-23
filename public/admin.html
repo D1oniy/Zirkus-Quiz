@@ -1,20 +1,20 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>Zirkus Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gradient-to-tr from-yellow-100 to-pink-100 flex items-center justify-center min-h-screen">
     <div class="max-w-lg w-full bg-white p-8 rounded-3xl shadow-2xl text-center border border-yellow-200">
         <h1 class="text-3xl font-bold mb-4 text-pink-700 drop-shadow">Admin Steuerung</h1>
         <div class="mb-4 grid grid-cols-1 gap-4">
-            <button onclick="window.setScreen('start')" class="bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded-xl mb-1 w-full shadow hover:bg-gray-400 transition">
+            <button onclick="window.setScreen('start')" class="bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-gray-400 transition">
                 Zurück zur Startseite
             </button>
+            <!-- Buzzer -->
             <div class="bg-pink-50 rounded-2xl p-4">
                 <div class="font-semibold mb-2 text-pink-800">Buzzer</div>
                 <input id="buzzer-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-pink-300" placeholder="Buzzer-Frage eingeben">
@@ -22,14 +22,15 @@
                     Buzzer starten
                 </button>
             </div>
+            <!-- Quiz -->
             <div class="bg-green-50 rounded-2xl p-4">
                 <div class="font-semibold mb-2 text-green-800">Quiz</div>
                 <input id="quiz-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-green-300" placeholder="Quiz-Frage eingeben">
                 <div class="grid grid-cols-2 gap-1 mb-2">
-                    <input id="quiz-a0" class="border rounded p-1 w-full" placeholder="Antwort A">
-                    <input id="quiz-a1" class="border rounded p-1 w-full" placeholder="Antwort B">
-                    <input id="quiz-a2" class="border rounded p-1 w-full" placeholder="Antwort C">
-                    <input id="quiz-a3" class="border rounded p-1 w-full" placeholder="Antwort D">
+                    <input id="quiz-a0" class="border rounded p-1" placeholder="Antwort A">
+                    <input id="quiz-a1" class="border rounded p-1" placeholder="Antwort B">
+                    <input id="quiz-a2" class="border rounded p-1" placeholder="Antwort C">
+                    <input id="quiz-a3" class="border rounded p-1" placeholder="Antwort D">
                 </div>
                 <select id="quiz-richtige" class="border rounded p-1 mb-2 w-full">
                     <option value="0">A richtig</option>
@@ -42,34 +43,30 @@
                     Quiz starten
                 </button>
             </div>
+            <!-- Akrobatik Shows -->
             <div class="bg-blue-50 rounded-2xl p-4">
                 <div class="font-semibold mb-2 text-blue-800">Akrobatik Shows</div>
-                <button onclick="window.starteAkro('akro1')" class="bg-blue-500 text-white font-bold px-4 py-2 rounded-xl mb-1 w-full shadow hover:bg-blue-600 transition">
+                <button onclick="window.starteAkro('akro1')" class="bg-blue-500 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-blue-600 transition mb-1">
                     Show 1 Bewertung
                 </button>
-                <button onclick="window.starteAkro('akro2')" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl mb-1 w-full shadow hover:bg-blue-700 transition">
+                <button onclick="window.starteAkro('akro2')" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-blue-700 transition mb-1">
                     Show 2 Bewertung
                 </button>
                 <button onclick="window.starteAkro('akro3')" class="bg-blue-700 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-blue-800 transition">
                     Show 3 Bewertung
                 </button>
             </div>
+            <!-- Wer ist der Mörder? -->
             <div class="bg-purple-50 rounded-2xl p-4">
                 <div class="font-semibold mb-2 text-purple-800">Wer ist der Mörder?</div>
-                <button onclick="window.starteVote('murder','Moerder-Abstimmung')" class="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl w-full mb-1 shadow hover:bg-purple-700 transition">
+                <button onclick="window.starteVote('murder','Moerder-Abstimmung')" class="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-purple-700 transition">
                     Abstimmung starten
                 </button>
             </div>
+            <!-- Wer ist der Komplize? -->
             <div class="bg-yellow-50 rounded-2xl p-4">
                 <div class="font-semibold mb-2 text-yellow-700">Wer ist der Komplize?</div>
-                <button onclick="window.starteVote('komplize','Komplizen-Abstimmung')" class="bg-yellow-500 text-white font-bold px-4 py-2 rounded-xl w-full mb-1 shadow hover:bg-yellow-600 transition">
-                    Abstimmung starten
-                </button>
-            </div>
-            <div class="bg-pink-50 rounded-2xl p-4 mb-4">
-                <div class="font-semibold mb-2 text-pink-800">Bester Hobby Horsing Reiter</div>
-                <button onclick="window.starteVote('hobby','Bester Hobby Horsing Reiter')"
-                    class="bg-pink-600 text-white font-bold px-4 py-2 rounded-xl w-full mb-1 shadow hover:bg-pink-700 transition">
+                <button onclick="window.starteVote('komplize','Komplizen-Abstimmung')" class="bg-yellow-500 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-yellow-600 transition">
                     Abstimmung starten
                 </button>
             </div>
