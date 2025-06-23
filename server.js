@@ -12,9 +12,6 @@ let currentScreen="start";
 let questions=[ /* …deine Fragen… */ ];
 let currentIdx=null;
 let buzzerWinnerId=null;
-let quizState={};
-let akroVotes={1:[],2:[],3:[]};
-let akroVoted={};
 
 io.on("connection",sock=>{
   sock.emit("update-sektoren",SEKTOR_NAMES);
@@ -32,16 +29,9 @@ io.on("connection",sock=>{
         io.emit("screen-update","quiz",{...getData()});
       },20000);
     }
-    if(screen.startsWith("akro")){
-      let n=Number(screen.replace("akro",""));
-      akroVotes[n]=[];
-      for(let id in akroVoted) akroVoted[id][n-1]=false;
-      io.emit("screen-update",screen,getData());
     }
-    if(screen==="murder"||screen==="komplize"){
-      io.emit("screen-update",screen,getData());
-    }
-  });
+
+    );
 
   sock.on("buzzer",()=>{
     if(currentScreen==="buzzer"&&!buzzerWinnerId){
@@ -57,28 +47,10 @@ io.on("connection",sock=>{
     }
   });
 
-  sock.on("akro-bewerten",({show,wertung})=>{
-    if(currentScreen==="akro"+show&&!akroVoted[sock.id][show-1]){
-      akroVotes[show].push(wertung);
-      akroVoted[sock.id][show-1]=true;
-      io.emit("screen-update","akro"+show,getData());
+  
     }
-  });
-});
+  );
+;
 
-function getData(sockid){
-  if(currentScreen.startsWith("akro")){
-    let n=Number(currentScreen.replace("akro",""));
-    let arr=akroVotes[n];
-    let avg=arr.length?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):"0";
-    return {chart:{labels:["Durchschnitt"],values:[avg]},abgestimmt:akroVoted[sockid][n-1]};
-  }
-  if(currentScreen==="murder"||currentScreen==="komplize"){
-    let votes=currentScreen==="murder"?{}: {};
-    // hier deine Logik, analog quiz
-    return {title: currentScreen==="murder"?"Wer ist der Mörder?":"Wer ist der Komplize?", chart:{labels:THEATER_NAMES,values:Array(THEATER_NAMES.length).fill(0)}};
-  }
-  return {};
-}
 
 http.listen(5500);
