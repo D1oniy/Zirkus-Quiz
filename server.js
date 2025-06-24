@@ -23,21 +23,27 @@ io.on("connection", sock => {
 
   sock.on("audience-join", () => sock.emit("screen-update", currentScreen, getData(sock.id)));
 
-  sock.on("set-screen", ({ screen, d }) => {
+  sock.on("set-screen", ({ screen, data }) => {
     currentScreen = screen;
     if (screen === "buzzer") {
       buzzerWinnerId = null;
-      currentIdx = d;
-      io.emit("screen-update", "buzzer", { frage: questions[d].frage });
+      // Save the current question for the buzzer round
+      questions[0] = data; // Always use index 0 for simplicity
+      currentIdx = 0;
+      io.emit("screen-update", "buzzer", { frage: data.frage });
     }
     if (screen === "quiz") {
-      currentIdx = d;
+      questions[0] = data; // Always use index 0 for simplicity
+      currentIdx = 0;
       quizState = { answers: {}, done: false };
-      io.emit("screen-update", "quiz", { frage: questions[d].frage, antworten: questions[d].antworten });
+      io.emit("screen-update", "quiz", { frage: data.frage, antworten: data.antworten });
       setTimeout(() => {
         quizState.done = true;
         io.emit("screen-update", "quiz", { ...getData() });
-      }, 20000);
+      }, (data.timer || 20) * 1000);
+    }
+    if (screen === "start") {
+      io.emit("screen-update", "start", {});
     }
   });
 
@@ -55,7 +61,6 @@ io.on("connection", sock => {
     }
   });
 });
-
 function getData(sockid) {
   // Implementiere hier die gewünschte Logik
   return {};
