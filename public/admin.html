@@ -1,52 +1,34 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Zirkus Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <title>Admin Steuerung</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-tr from-yellow-100 to-pink-100 flex items-center justify-center min-h-screen">
-    <div class="max-w-lg w-full bg-white p-8 rounded-3xl shadow-2xl text-center border border-yellow-200">
-        <h1 class="text-3xl font-bold mb-4 text-pink-700 drop-shadow">Admin Steuerung</h1>
-        <div class="mb-4 grid grid-cols-1 gap-4">
-            <button onclick="window.setScreen('start')" class="bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-gray-400 transition">
-                Zurück zur Startseite
-            </button>
-            <!-- Buzzer -->
-            <div class="bg-pink-50 rounded-2xl p-4">
-                <div class="font-semibold mb-2 text-pink-800">Buzzer</div>
-                <input id="buzzer-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-pink-300" placeholder="Buzzer-Frage eingeben">
-                <button onclick="window.starteBuzzer()" class="bg-pink-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-pink-700 transition">
-                    Buzzer starten
-                </button>
-            </div>
-            <!-- Quiz -->
-            <div class="bg-green-50 rounded-2xl p-4">
-                <div class="font-semibold mb-2 text-green-800">Quiz</div>
-                <input id="quiz-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-green-300" placeholder="Quiz-Frage eingeben">
-                <div class="grid grid-cols-2 gap-1 mb-2">
-                    <input id="quiz-a0" class="border rounded p-1" placeholder="Antwort A">
-                    <input id="quiz-a1" class="border rounded p-1" placeholder="Antwort B">
-                    <input id="quiz-a2" class="border rounded p-1" placeholder="Antwort C">
-                    <input id="quiz-a3" class="border rounded p-1" placeholder="Antwort D">
-                </div>
-                <select id="quiz-richtige" class="border rounded p-1 mb-2 w-full">
-                    <option value="0">A richtig</option>
-                    <option value="1">B richtig</option>
-                    <option value="2">C richtig</option>
-                    <option value="3">D richtig</option>
-                </select>
-                <input id="quiz-timer" type="number" value="10" min="5" max="60" class="border rounded p-1 mb-2 w-full" placeholder="Quiz Zeit (Sekunden)">
-                <button onclick="window.starteQuiz()" class="bg-green-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-green-700 transition">
-                    Quiz starten
-                </button>
-        </div>
-        <hr class="my-4">
-        <div id="admin-content" class="text-left"></div>
+  <div class="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-lg w-full border border-yellow-200">
+    <h1 class="text-3xl font-bold mb-6 textapink-700">Admin Steuerung</h1>
+
+    <!-- Start -->
+    <button onclick="setScreen('start')" class="bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded-lg w-full mb-6">Zurück zur Startseite</button>
+
+    <!-- Buzzer -->
+    <div class="mb-6">
+      <h2 class="font-semibold text-pink-800 mb-2">Buzzer-Quiz</h2>
+      <select id="buzzerSel" class="border rounded p-2 w-full mb-2"></select>
+      <button onclick="startBuzzer()" class="bg-pink-600 text-white font-bold px-4 py-2 rounded-lg w-full">Buzzer starten</button>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="script.js"></script>
+
+    <!-- Quiz -->
+    <div>
+      <h2 class="font-semibold text-green-800 mb-2">Multiple-Choice-Quiz</h2>
+      <select id="quizSel" class="border rounded p-2 w-full mb-2"></select>
+      <input id="timer" type="number" value="20" min="5" max="60" class="border rounded p-2 w-full mb-2" placeholder="Zeit in Sek">
+      <button onclick="startQuiz()" class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg w-full">Quiz starten</button>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
