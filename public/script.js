@@ -283,3 +283,34 @@ function showAdmin(screen, data) {
     c.innerHTML = `<div class="mb-2 text-sm text-gray-600">Screen: ${screen}</div>`;
     // (wer soll angezeigt werden, analog Pub.)
 }
+function startConfetti() {
+    // Simple Confetti (nur für Demo, für mehr Effekte: canvas-confetti npm oder CDN)
+    const canvas = document.getElementById("confetti-canvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let pieces = Array.from({length: 120}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        r: Math.random() * 6 + 4,
+        c: `hsl(${Math.random()*360},90%,60%)`,
+        s: Math.random() * 2 + 2
+    }));
+    let frame = 0;
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for (const p of pieces) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI);
+            ctx.fillStyle = p.c;
+            ctx.fill();
+            p.y += p.s;
+            if (p.y > canvas.height) p.y = -10;
+        }
+        frame++;
+        if (frame < 120) requestAnimationFrame(draw);
+        else ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+    draw();
+}
