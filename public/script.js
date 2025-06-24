@@ -179,10 +179,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if (isAdmin) {
         const buzzerSelect = document.getElementById("buzzer-frage");
         const quizSelect = document.getElementById("quiz-frage");
-        const richtigeSelect = document.getElementById("quiz-richtige");
-        const antwortDiv = document.createElement("div");
-        antwortDiv.id = "quiz-antworten";
-        quizSelect.parentNode.insertBefore(antwortDiv, quizSelect.nextSibling);
+        const antwortDiv = document.getElementById("quiz-antworten");
+        const richtigeAnzeige = document.getElementById("quiz-richtige-anzeige");
 
         FRAGEN.forEach((q, idx) => {
             const opt1 = document.createElement("option");
@@ -198,13 +196,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
         quizSelect.addEventListener("change", () => {
             antwortDiv.innerHTML = "";
+            richtigeAnzeige.innerHTML = "";
             const idx = quizSelect.value;
             if (idx !== "" && FRAGEN[idx]) {
                 antwortDiv.innerHTML = FRAGEN[idx].antworten.map(
                     (a, i) => `<div class="mb-1"><b>${String.fromCharCode(65 + i)}:</b> ${a}</div>`
                 ).join("");
-                // Automatisch richtige Antwort setzen!
-                richtigeSelect.value = FRAGEN[idx].richtige;
+                // Richtige Antwort anzeigen
+                const richtige = FRAGEN[idx].richtige;
+                richtigeAnzeige.innerHTML = `Richtige Antwort: <span class="font-bold">${String.fromCharCode(65 + parseInt(richtige))}</span>`;
             }
         });
     }
@@ -407,4 +407,3 @@ function startConfetti() {
         else ctx.clearRect(0,0,canvas.width,canvas.height);
     }
     draw();
-}
