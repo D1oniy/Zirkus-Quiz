@@ -6,27 +6,55 @@ let sektorBtns = null;
 const sektorColors = ["#ef4444","#2563eb","#facc15","#22c55e"];
 let sektorNames = ["Sektor 1","Sektor 2","Sektor 3","Sektor 4"];
 let barChart = null;
+const FRAGEN = [
+    {
+        frage: "Wie heißt der höchste Berg der Welt?",
+        antworten: ["Mount Everest", "K2", "Kilimandscharo", "Zugspitze"],
+        richtige: 0
+    },
+    {
+        frage: "Welches Tier ist das größte Landtier?",
+        antworten: ["Elefant", "Nashorn", "Nilpferd", "Giraffe"],
+        richtige: 0
+    },
+];
 
 // --- Admin-Funktionen ---
 if (isAdmin) {
     window.setScreen = screen => socket.emit("set-screen", { screen });
     window.starteBuzzer = () => {
-        const frage = document.getElementById("buzzer-frage")?.value.trim();
-        socket.emit("set-screen", { screen: "buzzer", data: { frage } });
+        const idx = document.getElementById("buzzer-frage").value;
+        if (idx === "") return alert("Bitte eine Frage auswählen!");
+        const frageObj = FRAGEN[idx];
+        socket.emit("set-screen", { screen: "buzzer", data: { frage: frageObj.frage } });
     };
     window.starteQuiz = () => {
-        const frage = document.getElementById("quiz-frage")?.value;
-        const antworten = [
-            document.getElementById("quiz-a0")?.value,
-            document.getElementById("quiz-a1")?.value,
-            document.getElementById("quiz-a2")?.value,
-            document.getElementById("quiz-a3")?.value
-        ];
-        const richtige = Number(document.getElementById("quiz-richtige")?.value);
-        const timer = Number(document.getElementById("quiz-timer")?.value) || 10;
-        socket.emit("set-screen", { screen: "quiz", data: { frage, antworten, richtige, timer } });
+        const idx = document.getElementById("quiz-frage").value;
+        if (idx === "") return alert("Bitte eine Frage auswählen!");
+        const frageObj = FRAGEN[idx];
+        const richtige = frageObj.richtige;
+        const antworten = frageObj.antworten;
+        const timer = Number(document.getElementById("quiz-timer").value) || 10;
+        socket.emit("set-screen", { screen: "quiz", data: { frage: frageObj.frage, antworten, richtige, timer } });
     };
 }
+window.addEventListener("DOMContentLoaded", () => {
+    if (isAdmin) {
+        const buzzerSelect = document.getElementById("buzzer-frage");
+        const quizSelect = document.getElementById("quiz-frage");
+        FRAGEN.forEach((q, idx) => {
+            const opt1 = document.createElement("option");
+            opt1.value = idx;
+            opt1.textContent = q.frage;
+            buzzerSelect.appendChild(opt1);
+
+            const opt2 = document.createElement("option");
+            opt2.value = idx;
+            opt2.textContent = q.frage;
+            quizSelect.appendChild(opt2);
+        });
+    }
+});
 
 // --- Publikum: Name & Sektor ---
 if (!isAdmin && document.getElementById("sektorBtns")) {
