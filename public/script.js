@@ -8,15 +8,143 @@ let sektorNames = ["Sektor 1","Sektor 2","Sektor 3","Sektor 4"];
 let barChart = null;
 const FRAGEN = [
     {
-        frage: "Wie heißt der höchste Berg der Welt?",
-        antworten: ["Mount Everest", "K2", "Kilimandscharo", "Zugspitze"],
+        frage: "Wie viele verschiedene Plattformen mussten Eltern in der Schulzeit ihres Kindes verstehen lernen?",
+        antworten: [
+            "2",
+            "4",
+            "Niemand weiss es. Nicht mal die Schulleitung."
+        ],
+        richtige: 2
+    },
+    {
+        frage: "Was war 2020 DAS Symbol für modernen Schulunterricht?",
+        antworten: [
+            "Whiteboard",
+            "Videokonferenz",
+            "Klassenbuch"
+        ],
+        richtige: 1
+    },
+    {
+        frage: "Was ist der meistgenutzte Satz kurz vor Schulbeginn?",
+        antworten: [
+            "„Ich habe nichts zum Anziehen“",
+            "„Wo ist mein Rucksack?“",
+            "„Könnt ihr mich fahren?“",
+            "«WAS WIR HATTEN HAUSAUFGABEN!?»"
+        ],
+        richtige: 3
+    },
+    {
+        frage: "Wie viele Jahre dauert es in der Schweiz in der Regel, von der 1. Klasse bis zur Lehre?",
+        antworten: [
+            "10",
+            "8",
+            "9",
+            "Kommt drauf an, in welchem Kanton man fragt"
+        ],
         richtige: 0
     },
     {
-        frage: "Welches Tier ist das größte Landtier?",
-        antworten: ["Elefant", "Nashorn", "Nilpferd", "Giraffe"],
+        frage: "Was passiert, wenn man im Kanton Bern die Sekundarschule nicht besteht?",
+        antworten: [
+            "Man wird automatisch ins Gymnasium versetzt",
+            "Man kann die Schule wiederholen oder auf eine andere Schulform wechseln",
+            "Man bekommt Hausarrest bis zum nächsten Jahr",
+            "Man darf das erste Lehrjahr überspringen"
+        ],
+        richtige: 1
+    },
+    {
+        frage: "Was passiert im Lehrerzimmer wirklich?",
+        antworten: [
+            "Streng geheime Meetings",
+            "Kaffee trinken",
+            "Kurz über Schüler:inne lästern",
+            "Alles – aber wir werden es nie genau erfahren"
+        ],
+        richtige: 3
+    },
+    {
+        frage: "Welches ist das beliebteste Schulfach?",
+        antworten: [
+            "Sport",
+            "Deutsch",
+            "Kein Schulfach ist beliebt",
+            "Es kommt auf den Lehrer darauf an"
+        ],
         richtige: 0
     },
+    {
+        frage: "Was ist das beliebteste Schul-Event des Jahres?",
+        antworten: [
+            "Schul Abschlussfest",
+            "Music Night",
+            "Ski Lager",
+            "Dress up Day"
+        ],
+        richtige: 0
+    },
+    {
+        frage: "In welchem Fach schläft man am ehesten ein?",
+        antworten: [
+            "Deutsch",
+            "Math",
+            "R.Z.G",
+            "BG"
+        ],
+        richtige: 0
+    },
+    {
+        frage: "Welcher Schulhofbereich ist der beliebteste Treffpunkt in der Pause?",
+        antworten: [
+            "Ping-Pong Tisch",
+            "Basketball Platz",
+            "Pizza Haus",
+            "WC"
+        ],
+        richtige: 0
+    },
+    {
+        frage: "Welche Lehrer/innen Verschieben am meisten Teste?",
+        antworten: [
+            "Englisch Lehrer",
+            "Mathe Lehrer",
+            "Sport Lehrer",
+            "Deutsch Lehrer"
+        ],
+        richtige: 1
+    },
+    {
+        frage: "Was ist das häufigste Missgeschick beim Sportunterricht?",
+        antworten: [
+            "Kleider Vergessen",
+            "Verspätung",
+            "Schuhe Vergessen",
+            "Fussball in die fresse"
+        ],
+        richtige: 0
+    },
+    {
+        frage: "In welchem Schulraum passieren die lustigsten Gespräche?",
+        antworten: [
+            "Niveauraum",
+            "Klassenzimmer",
+            "Multiraum",
+            "Schülerlabor"
+        ],
+        richtige: 1
+    },
+    {
+        frage: "Welches Schulfach verstehen die Eltern am wenigsten?",
+        antworten: [
+            "R.Z.G",
+            "MUI",
+            "E.R.G",
+            "W.A.H"
+        ],
+        richtige: 0
+    }
 ];
 
 // --- Admin-Funktionen ---
