@@ -404,3 +404,5 @@ function startConfetti() {
         if (frame < 120) requestAnimationFrame(draw);
         else ctx.clearRect(0,0,canvas.width,canvas.height);
     }
+    draw();
+}
