@@ -236,6 +236,20 @@ socket.on("screen-update", (screen, data) => {
     else if (!isAdmin && document.getElementById("content")) showAudience(screen, data);
 });
 
+// --- Timer-Anzeige ---
+function showTimer(endTime, parent) {
+    if (!endTime) return;
+    let timerDiv = document.createElement("div");
+    timerDiv.className = "font-bold text-lg mb-2";
+    parent.appendChild(timerDiv);
+    function update() {
+        const left = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+        timerDiv.textContent = `Zeit: ${left}s`;
+        if (left > 0) setTimeout(update, 250);
+    }
+    update();
+}
+
 // --- Publikum: Anzeige ---
 function showAudience(screen, data) {
     const c = document.getElementById("content");
@@ -268,7 +282,8 @@ function showAudience(screen, data) {
             }
         } else {
             // Runder Buzzer
-            c.innerHTML = `
+            showTimer(data.endTime, c);
+            c.innerHTML += `
                 <div class="mb-6 text-xl font-bold">${data.frage || ""}</div>
                 <button id="buzzerBtn"
                     class="w-40 h-40 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 transition text-white text-3xl font-bold shadow-2xl flex items-center justify-center mx-auto animate-pulse"
@@ -281,7 +296,8 @@ function showAudience(screen, data) {
     }
     if (screen === "quiz") {
         let abg = data.abgestimmt || false;
-        c.innerHTML = `<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
+        if (!data.showSolution) showTimer(data.endTime, c);
+        c.innerHTML += `<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
         const ansDiv = document.getElementById("ans");
         if (data.antworten) {
             data.antworten.forEach((a, i) => {
@@ -317,7 +333,33 @@ function showAdmin(screen, data) {
     const c = document.getElementById("admin-content");
     if (!c) return;
     c.innerHTML = `<div class="mb-2 text-sm text-gray-600">Screen: ${screen}</div>`;
-    // (wer soll angezeigt werden, analog Pub.)
+
+    if (screen === "buzzer") {
+        if (data.buzzerWinner) {
+            const sektorIdx = data.buzzerWinner.sektor ?? 0;
+            const sektorColor = sektorColors[sektorIdx] || "#888";
+            c.innerHTML += `
+                <div class="mt-2 text-green-700 font-bold">Buzzer-Gewinner: <span style="color:${sektorColor}">${data.buzzerWinner.name} [${sektorNames[sektorIdx]}]</span></div>
+            `;
+        } else {
+            c.innerHTML += `<div class="mt-2">Noch kein Gewinner</div>`;
+        }
+        showTimer(data.endTime, c);
+    }
+    if (screen === "quiz") {
+        if (data.sektorCorrect) {
+            c.innerHTML += `<div class="mt-2 font-bold">Korrekte Antworten pro Sektor:</div>`;
+            data.sektorCorrect.forEach((count, idx) => {
+                c.innerHTML += `<div style="color:${sektorColors[idx]};font-weight:bold">${sektorNames[idx]}: ${count}</div>`;
+            });
+            const max = Math.max(...data.sektorCorrect);
+            const sieger = data.sektorCorrect.map((v, i) => v === max ? sektorNames[i] : null).filter(Boolean);
+            if (max > 0) {
+                c.innerHTML += `<div class="mt-2 text-green-700 font-bold">Sieger-Sektor: ${sieger.join(", ")}</div>`;
+            }
+        }
+        if (!data.showSolution) showTimer(data.endTime, c);
+    }
 }
 
 function startConfetti() {
