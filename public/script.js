@@ -246,35 +246,73 @@ function showAudience(screen, data) {
     if (screen === "start") {
         c.innerHTML = `<div class="font-bold text-lg">Bitte warten…</div>`;
     }
-    if (screen === "buzzer") {
-        if (data.buzzerWinner) {
-            c.innerHTML = `<div class="text-2xl font-bold">${data.buzzerWinner.name || data.buzzerWinner.id}</div>`;
+   if (screen === "buzzer") {
+    if (data.buzzerWinner) {
+        // Gewinner-View
+        if (socket.id === data.buzzerWinner.id) {
+            c.innerHTML = `
+                <div class="text-2xl font-bold text-green-600 mb-4 animate-bounce">Du warst am schnellsten am Buzzer!<br>Stehe auf und sage die Antwort!</div>
+                <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none"></canvas>
+            `;
+            startConfetti();
         } else {
-            c.innerHTML = `<div>${data.frage || ""}</div>
-                <button onclick="socket.emit('buzzer')" class="bg-red-500 text-white py-2 px-4 rounded">BUZZER!</button>`;
+            // Für alle anderen: Gewinner-Anzeige in Sektor-Farbe
+            const sektorIdx = data.buzzerWinner.sektor ?? 0;
+            const sektorColor = sektorColors[sektorIdx] || "#888";
+            c.innerHTML = `
+                <div class="text-2xl font-bold mb-2" style="color:${sektorColor}">
+                    ${data.buzzerWinner.name} [${sektorNames[sektorIdx]}]
+                </div>
+                <div class="text-lg">war am schnellsten am Buzzer!</div>
+            `;
         }
-    }
-    if (screen === "quiz") {
-        let abg = data.abgestimmt || false;
-        c.innerHTML = `<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
-        const ansDiv = document.getElementById("ans");
-        if (data.antworten) {
-            data.antworten.forEach((a, i) => {
-                const b = document.createElement("button");
-                b.innerText = a; b.className = "m-1 bg-blue-500 text-white py-2 px-3 rounded";
-                if (abg) b.disabled = true;
-                b.onclick = () => {
-                    socket.emit("quiz-answer", i);
-                    b.disabled = true;
-                };
-                ansDiv.appendChild(b);
-            });
-        }
-        if (data.showSolution) {
-            c.innerHTML += `<div class="mt-4 text-green-700 font-bold">Richtig: ${["A", "B", "C", "D"][data.richtige]}</div>`;
-        }
+    } else {
+        // Runder Buzzer
+        c.innerHTML = `
+            <div class="mb-6 text-xl font-bold">${data.frage || ""}</div>
+            <button id="buzzerBtn"
+                class="w-40 h-40 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 transition text-white text-3xl font-bold shadow-2xl flex items-center justify-center mx-auto animate-pulse"
+                style="box-shadow: 0 0 40px 10px #f87171;">
+                BUZZER!
+            </button>
+        `;
+        document.getElementById("buzzerBtn").onclick = () => socket.emit("buzzer");
     }
 }
+    }
+  if (screen === "quiz") {
+    let abg = data.abgestimmt || false;
+    c.innerHTML = `<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
+    const ansDiv = document.getElementById("ans");
+    if (data.antworten) {
+        data.antworten.forEach((a, i) => {
+            const b = document.createElement("button");
+            b.innerText = a;
+            b.className = "m-1 bg-blue-500 text-white py-2 px-3 rounded";
+            if (abg) b.disabled = true;
+            b.onclick = () => {
+                socket.emit("quiz-answer", i);
+                b.disabled = true;
+                ansDiv.innerHTML += `<div class="mt-2 text-green-700 font-bold">Deine Antwort wurde gewertet!</div>`;
+            };
+            ansDiv.appendChild(b);
+        });
+    }
+if (data.showSolution && data.sektorCorrect) {
+    c.innerHTML += `<div class="mt-4 font-bold">Korrekte Antworten pro Sektor:</div>`;
+    data.sektorCorrect.forEach((count, idx) => {
+        c.innerHTML += `<div style="color:${sektorColors[idx]};font-weight:bold">${sektorNames[idx]}: ${count}</div>`;
+    });
+    // Optional: Sieger-Sektor hervorheben
+    const max = Math.max(...data.sektorCorrect);
+    const sieger = data.sektorCorrect.map((v, i) => v === max ? sektorNames[i] : null).filter(Boolean);
+    if (max > 0) {
+        c.innerHTML += `<div class="mt-2 text-green-700 font-bold">Sieger-Sektor: ${sieger.join(", ")}</div>`;
+    }
+}    
+    
+} // <-- Add this closing brace to properly end showAudience
+    
 
 // --- Admin: Anzeige ---
 function showAdmin(screen, data) {
@@ -312,5 +350,5 @@ function startConfetti() {
         if (frame < 120) requestAnimationFrame(draw);
         else ctx.clearRect(0,0,canvas.width,canvas.height);
     }
-    draw();
+    draw();  
 }
