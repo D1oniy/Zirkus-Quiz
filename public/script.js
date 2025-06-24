@@ -9,10 +9,10 @@ let barChart = null;
 let registered = false;
 
 const buttonColors = [
-    "bg-blue-500 hover:bg-blue-600",   // A
-    "bg-yellow-400 hover:bg-yellow-500 text-black", // B
-    "bg-green-500 hover:bg-green-600", // C
-    "bg-pink-500 hover:bg-pink-600"    // D
+    "bg-blue-500 hover:bg-blue-600 text-white",   // A
+    "bg-yellow-400 hover:bg-yellow-500 text-white", // B (weiß!)
+    "bg-green-500 hover:bg-green-600 text-white", // C
+    "bg-pink-500 hover:bg-pink-600 text-white"    // D
 ];
 
 const FRAGEN = [
@@ -272,6 +272,7 @@ function showAudience(screen, data) {
         c.innerHTML = `<div class="font-bold text-lg">Bitte warten…</div>`;
     }
     if (screen === "buzzer") {
+        // KEIN Timer beim Buzzer!
         if (data.buzzerWinner) {
             if (socket.id === data.buzzerWinner.id) {
                 c.innerHTML = `
@@ -290,7 +291,6 @@ function showAudience(screen, data) {
                 `;
             }
         } else {
-            showTimer(data.endTime, c);
             c.innerHTML += `
                 <div class="mb-6 text-xl font-bold">${data.frage || ""}</div>
                 <button id="buzzerBtn"
@@ -305,6 +305,7 @@ function showAudience(screen, data) {
     if (screen === "quiz") {
         let abg = data.abgestimmt || false;
         c.innerHTML = "";
+        // Timer NUR beim Quiz!
         showTimer(data.endTime, c);
 
         if (data.antworten) {
@@ -357,7 +358,7 @@ function showAdmin(screen, data) {
         } else {
             c.innerHTML += `<div class="mt-2">Noch kein Gewinner</div>`;
         }
-        showTimer(data.endTime, c);
+        // KEIN Timer beim Buzzer!
     }
     if (screen === "quiz") {
         if (data.sektorCorrect) {
@@ -403,5 +404,3 @@ function startConfetti() {
         if (frame < 120) requestAnimationFrame(draw);
         else ctx.clearRect(0,0,canvas.width,canvas.height);
     }
-    draw();  
-}
