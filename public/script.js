@@ -9,85 +9,67 @@ let barChart = null;
 
 // --- Admin-Funktionen ---
 if (isAdmin) {
-    window.setScreen = screen => socket.emit("set-screen",{screen});
+    window.setScreen = screen => socket.emit("set-screen", { screen });
     window.starteBuzzer = () => {
-        const frage = document.getElementById("buzzer-frage").value.trim();
-        socket.emit("set-screen",{screen:"buzzer",data:{frage}});
+        const frage = document.getElementById("buzzer-frage")?.value.trim();
+        socket.emit("set-screen", { screen: "buzzer", data: { frage } });
     };
     window.starteQuiz = () => {
-        const frage = document.getElementById("quiz-frage").value;
+        const frage = document.getElementById("quiz-frage")?.value;
         const antworten = [
-            document.getElementById("quiz-a0").value,
-            document.getElementById("quiz-a1").value,
-            document.getElementById("quiz-a2").value,
-            document.getElementById("quiz-a3").value
+            document.getElementById("quiz-a0")?.value,
+            document.getElementById("quiz-a1")?.value,
+            document.getElementById("quiz-a2")?.value,
+            document.getElementById("quiz-a3")?.value
         ];
-        const richtige = Number(document.getElementById("quiz-richtige").value);
-        const timer = Number(document.getElementById("quiz-timer").value)||10;
-        socket.emit("set-screen",{screen:"quiz",data:{frage,antworten,richtige,timer}});
+        const richtige = Number(document.getElementById("quiz-richtige")?.value);
+        const timer = Number(document.getElementById("quiz-timer")?.value) || 10;
+        socket.emit("set-screen", { screen: "quiz", data: { frage, antworten, richtige, timer } });
     };
 }
 
 // --- Publikum: Name & Sektor ---
-if (!isAdmin) {
-       window.setScreen = screen => socket.emit("set-screen", { screen, d: 0 }); // Use index 0 for demo
-    window.starteBuzzer = () => {
-        // For demo, always use index 0
-        socket.emit("set-screen", { screen: "buzzer", d: 0 });
-    };
-    window.starteQuiz = () => {
-        // For demo, always use index 0
-        socket.emit("set-screen", { screen: "quiz", d: 0 });
-    };
-}
+if (!isAdmin && document.getElementById("sektorBtns")) {
     sektorBtns = document.getElementById("sektorBtns");
     socket.on("update-sektoren", names => {
         sektorNames = names;
         sektorBtns.innerHTML = "";
-        names.forEach((n,i)=>{
+        names.forEach((n, i) => {
             const btn = document.createElement("button");
             btn.innerText = n;
             btn.style.background = sektorColors[i];
             btn.className = "text-white font-bold py-2 px-3 rounded-xl shadow transition";
-            btn.onclick = ()=>{
+            btn.onclick = () => {
                 userSektor = i;
-                document.querySelectorAll("#sektorBtns button").forEach(b=>b.classList.remove("ring-4","ring-pink-300"));
-                btn.classList.add("ring-4","ring-pink-300");
+                document.querySelectorAll("#sektorBtns button").forEach(b => b.classList.remove("ring-4", "ring-pink-300"));
+                btn.classList.add("ring-4", "ring-pink-300");
                 document.getElementById("startBtn").disabled = !document.getElementById("audience-name").value.trim();
             };
             sektorBtns.appendChild(btn);
         });
     });
-    document.getElementById("audience-name").oninput = ()=>{
-        document.getElementById("startBtn").disabled = !(document.getElementById("audience-name").value.trim() && userSektor!==null);
+    document.getElementById("audience-name").oninput = () => {
+        document.getElementById("startBtn").disabled = !(document.getElementById("audience-name").value.trim() && userSektor !== null);
     };
-    document.getElementById("startBtn").onclick = ()=>{
-        userName = document.getElementById("audience-name").value.trim()||"Anonym";
-        socket.emit("register",{name:userName,sektor:userSektor});
-        document.getElementById("startArea").style.display="none";
-        document.getElementById("content").innerHTML="<b>Bitte warten…</b>";
+    document.getElementById("startBtn").onclick = () => {
+        userName = document.getElementById("audience-name").value.trim() || "Anonym";
+        socket.emit("register", { name: userName, sektor: userSektor });
+        document.getElementById("startArea").style.display = "none";
+        document.getElementById("content").innerHTML = "<b>Bitte warten…</b>";
         socket.emit("audience-join");
     };
-
-
-// --- Live-Screen Updates ---
-socket.on("screen-update",(screen,data)=>{
-    if (isAdmin) showAdmin(screen,data);
-    else showAudience(screen,data);
-});
-
-// ...existing code...
+}
 
 // --- Live-Screen Updates ---
 socket.on("screen-update", (screen, data) => {
-    if (isAdmin) showAdmin(screen, data);
-    else if (document.getElementById("content")) showAudience(screen, data);
+    if (isAdmin && document.getElementById("admin-content")) showAdmin(screen, data);
+    else if (!isAdmin && document.getElementById("content")) showAudience(screen, data);
 });
 
 // --- Publikum: Anzeige ---
 function showAudience(screen, data) {
     const c = document.getElementById("content");
-    if (!c) return; // Prevent error if element doesn't exist
+    if (!c) return;
     c.innerHTML = "";
     if (barChart) { barChart.destroy(); barChart = null; }
 
