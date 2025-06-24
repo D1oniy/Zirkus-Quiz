@@ -31,13 +31,17 @@ io.on("connection", sock => {
             buzzerWinnerId = null;
             questions[0] = data;
             currentIdx = 0;
-            io.emit("screen-update", "buzzer", { frage: data.frage });
+            // Timer für Buzzer (z.B. 20 Sekunden)
+            const endTime = Date.now() + 20000;
+            io.emit("screen-update", "buzzer", { frage: data.frage, endTime });
         }
         if (screen === "quiz") {
             questions[0] = data;
             currentIdx = 0;
             quizState = { answers: {}, done: false };
-            io.emit("screen-update", "quiz", { frage: data.frage, antworten: data.antworten });
+            // Timer für Quiz (konfigurierbar)
+            const endTime = Date.now() + ((data.timer || 20) * 1000);
+            io.emit("screen-update", "quiz", { frage: data.frage, antworten: data.antworten, endTime });
             setTimeout(() => {
                 quizState.done = true;
                 // Sektor-Auswertung
