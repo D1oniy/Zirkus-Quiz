@@ -104,5 +104,46 @@ function getData(sockid) {
   // Implementiere hier die gewünschte Logik
   return {};
 }
+sock.on("set-screen", ({ screen, data }) => {
+    currentScreen = screen;
+    if (screen === "quiz") {
+        questions[0] = data;
+        currentIdx = 0;
+        quizState = { answers: {}, done: false };
+        io.emit("screen-update", "quiz", { frage: data.frage, antworten: data.antworten });
+        setTimeout(() => {
+            quizState.done = true;
+            // Sektor-Auswertung
+            const sektorCorrect = [0, 0, 0, 0];
+            for (const [sockid, answer] of Object.entries(quizState.answers)) {
+                const info = userInfos[sockid];
+                if (info && answer === data.richtige) {
+                    sektorCorrect[info.sektor] = (sektorCorrect[info.sektor] || 0) + 1;
+                }
+            }
+            io.emit("screen-update", "quiz", {
+                frage: data.frage,
+                antworten: data.antworten,
+                richtige: data.richtige,
+                showSolution: true,
+                sektorCorrect
+            });
+        }, (data.timer || 20) * 1000);
+    }
+    // ...rest wie gehabt...
+});
 
+sock.on("quiz-answer", i => {
+    if (currentScreen === "quiz" && !quizState.done) {
+        if (!(sock.id in quizState.answers)) {
+            quizState.answers[sock.id] = i;
+            // Feedback an den User, dass Antwort gewertet wurde
+            sock.emit("screen-update", "quiz", {
+                frage: questions[currentIdx].frage,
+                antworten: questions[currentIdx].antworten,
+                abgestimmt: true
+            });
+        }
+    }
+});
 http.listen(5500);
