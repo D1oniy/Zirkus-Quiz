@@ -10,7 +10,7 @@ let registered = false;
 
 const buttonColors = [
     "bg-blue-500 hover:bg-blue-600 text-white",   // A
-    "bg-yellow-400 hover:bg-yellow-500 text-white", // B (weiß!)
+    "bg-yellow-400 hover:bg-yellow-500 text-white", // B
     "bg-green-500 hover:bg-green-600 text-white", // C
     "bg-pink-500 hover:bg-pink-600 text-white"    // D
 ];
@@ -179,6 +179,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (isAdmin) {
         const buzzerSelect = document.getElementById("buzzer-frage");
         const quizSelect = document.getElementById("quiz-frage");
+        const richtigeSelect = document.getElementById("quiz-richtige");
         const antwortDiv = document.createElement("div");
         antwortDiv.id = "quiz-antworten";
         quizSelect.parentNode.insertBefore(antwortDiv, quizSelect.nextSibling);
@@ -202,6 +203,8 @@ window.addEventListener("DOMContentLoaded", () => {
                 antwortDiv.innerHTML = FRAGEN[idx].antworten.map(
                     (a, i) => `<div class="mb-1"><b>${String.fromCharCode(65 + i)}:</b> ${a}</div>`
                 ).join("");
+                // Automatisch richtige Antwort setzen!
+                richtigeSelect.value = FRAGEN[idx].richtige;
             }
         });
     }
@@ -272,10 +275,11 @@ function showAudience(screen, data) {
         c.innerHTML = `<div class="font-bold text-lg">Bitte warten…</div>`;
     }
     if (screen === "buzzer") {
-        // KEIN Timer beim Buzzer!
+        // Frage immer anzeigen!
+        c.innerHTML += `<div class="mb-6 text-xl font-bold">${data.frage || ""}</div>`;
         if (data.buzzerWinner) {
             if (socket.id === data.buzzerWinner.id) {
-                c.innerHTML = `
+                c.innerHTML += `
                     <div class="text-2xl font-bold text-green-600 mb-4 animate-bounce">Du warst am schnellsten am Buzzer!<br>Stehe auf und sage die Antwort!</div>
                     <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none"></canvas>
                 `;
@@ -283,7 +287,7 @@ function showAudience(screen, data) {
             } else {
                 const sektorIdx = data.buzzerWinner.sektor ?? 0;
                 const sektorColor = sektorColors[sektorIdx] || "#888";
-                c.innerHTML = `
+                c.innerHTML += `
                     <div class="text-2xl font-bold mb-2" style="color:${sektorColor}">
                         ${data.buzzerWinner.name} [${sektorNames[sektorIdx]}]
                     </div>
@@ -292,7 +296,6 @@ function showAudience(screen, data) {
             }
         } else {
             c.innerHTML += `
-                <div class="mb-6 text-xl font-bold">${data.frage || ""}</div>
                 <button id="buzzerBtn"
                     class="w-40 h-40 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 transition text-white text-3xl font-bold shadow-2xl flex items-center justify-center mx-auto animate-pulse"
                     style="box-shadow: 0 0 40px 10px #f87171;">
@@ -305,7 +308,6 @@ function showAudience(screen, data) {
     if (screen === "quiz") {
         let abg = data.abgestimmt || false;
         c.innerHTML = "";
-        // Timer NUR beim Quiz!
         showTimer(data.endTime, c);
 
         if (data.antworten) {
@@ -349,6 +351,7 @@ function showAdmin(screen, data) {
     c.innerHTML = `<div class="mb-2 text-sm text-gray-600">Screen: ${screen}</div>`;
 
     if (screen === "buzzer") {
+        c.innerHTML += `<div class="mb-6 text-xl font-bold">${data.frage || ""}</div>`;
         if (data.buzzerWinner) {
             const sektorIdx = data.buzzerWinner.sektor ?? 0;
             const sektorColor = sektorColors[sektorIdx] || "#888";
@@ -358,9 +361,9 @@ function showAdmin(screen, data) {
         } else {
             c.innerHTML += `<div class="mt-2">Noch kein Gewinner</div>`;
         }
-        // KEIN Timer beim Buzzer!
     }
     if (screen === "quiz") {
+        if (!data.showSolution) showTimer(data.endTime, c);
         if (data.sektorCorrect) {
             c.innerHTML += `<div class="mt-2 font-bold">Korrekte Antworten pro Sektor:</div>`;
             data.sektorCorrect.forEach((count, idx) => {
@@ -372,7 +375,6 @@ function showAdmin(screen, data) {
                 c.innerHTML += `<div class="mt-2 text-green-700 font-bold">Sieger-Sektor: ${sieger.join(", ")}</div>`;
             }
         }
-        if (!data.showSolution) showTimer(data.endTime, c);
     }
 }
 
