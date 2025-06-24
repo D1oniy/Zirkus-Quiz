@@ -12,7 +12,7 @@ if (isAdmin) {
     window.setScreen = screen => socket.emit("set-screen",{screen});
     window.starteBuzzer = () => {
         const frage = document.getElementById("buzzer-frage").value.trim();
-        socket.emit("set-screen",{screen:"buzzer", d: 0}); // Use 'd' to match server
+        socket.emit("set-screen",{screen:"buzzer",data:{frage}});
     };
     window.starteQuiz = () => {
         const frage = document.getElementById("quiz-frage").value;
@@ -24,12 +24,22 @@ if (isAdmin) {
         ];
         const richtige = Number(document.getElementById("quiz-richtige").value);
         const timer = Number(document.getElementById("quiz-timer").value)||10;
-        socket.emit("set-screen",{screen:"quiz", d: 0}); // Use 'd' to match server
+        socket.emit("set-screen",{screen:"quiz",data:{frage,antworten,richtige,timer}});
     };
 }
 
 // --- Publikum: Name & Sektor ---
 if (!isAdmin) {
+       window.setScreen = screen => socket.emit("set-screen", { screen, d: 0 }); // Use index 0 for demo
+    window.starteBuzzer = () => {
+        // For demo, always use index 0
+        socket.emit("set-screen", { screen: "buzzer", d: 0 });
+    };
+    window.starteQuiz = () => {
+        // For demo, always use index 0
+        socket.emit("set-screen", { screen: "quiz", d: 0 });
+    };
+}
     sektorBtns = document.getElementById("sektorBtns");
     socket.on("update-sektoren", names => {
         sektorNames = names;
@@ -58,7 +68,6 @@ if (!isAdmin) {
         document.getElementById("content").innerHTML="<b>Bitte warten…</b>";
         socket.emit("audience-join");
     };
-}
 
 // --- Live-Screen Updates ---
 socket.on("screen-update",(screen,data)=>{
@@ -77,8 +86,7 @@ function showAudience(screen,data){
     }
     if(screen==="buzzer"){
         if(data.buzzerWinner){
-            // Show ID if name is not available
-            c.innerHTML=`<div class="text-2xl font-bold">${data.buzzerWinner.name || data.buzzerWinner.id}</div>`;
+            c.innerHTML=`<div class="text-2xl font-bold">${data.buzzerWinner.name}</div>`;
         } else {
             c.innerHTML=`<div>${data.frage||""}</div>
                 <button onclick="socket.emit('buzzer')" class="bg-red-500 text-white py-2 px-4 rounded">BUZZER!</button>`;
@@ -87,9 +95,8 @@ function showAudience(screen,data){
     if(screen==="quiz"){
         let abg=data.abgestimmt||false;
         c.innerHTML=`<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
-        // Select ansDiv after setting innerHTML
         const ansDiv=document.getElementById("ans");
-        data.antworten && data.antworten.forEach((a,i)=>{
+        data.antworten.forEach((a,i)=>{
             const b=document.createElement("button");
             b.innerText=a; b.className="m-1 bg-blue-500 text-white py-2 px-3 rounded";
             if(abg) b.disabled=true;
