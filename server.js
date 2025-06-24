@@ -88,5 +88,5 @@ function getData(){
   return {};
 }
 
-const PORT=process.env.PORT||8000;
+const PORT = 8080;
 http.listen(PORT, ()=>console.log("Server läuft auf",PORT));
