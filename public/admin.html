@@ -14,34 +14,33 @@
             <button onclick="window.setScreen('start')" class="bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-gray-400 transition">
                 Zurück zur Startseite
             </button>
-            <!-- Buzzer -->
-            <div class="bg-pink-50 rounded-2xl p-4">
-                <div class="font-semibold mb-2 text-pink-800">Buzzer</div>
-                <input id="buzzer-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-pink-300" placeholder="Buzzer-Frage eingeben">
-                <button onclick="window.starteBuzzer()" class="bg-pink-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-pink-700 transition">
-                    Buzzer starten
-                </button>
-            </div>
-            <!-- Quiz -->
-            <div class="bg-green-50 rounded-2xl p-4">
-                <div class="font-semibold mb-2 text-green-800">Quiz</div>
-                <input id="quiz-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-green-300" placeholder="Quiz-Frage eingeben">
-                <div class="grid grid-cols-2 gap-1 mb-2">
-                    <input id="quiz-a0" class="border rounded p-1" placeholder="Antwort A">
-                    <input id="quiz-a1" class="border rounded p-1" placeholder="Antwort B">
-                    <input id="quiz-a2" class="border rounded p-1" placeholder="Antwort C">
-                    <input id="quiz-a3" class="border rounded p-1" placeholder="Antwort D">
-                </div>
-                <select id="quiz-richtige" class="border rounded p-1 mb-2 w-full">
-                    <option value="0">A richtig</option>
-                    <option value="1">B richtig</option>
-                    <option value="2">C richtig</option>
-                    <option value="3">D richtig</option>
-                </select>
-                <input id="quiz-timer" type="number" value="10" min="5" max="60" class="border rounded p-1 mb-2 w-full" placeholder="Quiz Zeit (Sekunden)">
-                <button onclick="window.starteQuiz()" class="bg-green-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-green-700 transition">
-                    Quiz starten
-                </button>
+           <!-- Buzzer -->
+<div class="bg-pink-50 rounded-2xl p-4">
+    <div class="font-semibold mb-2 text-pink-800">Buzzer</div>
+    <select id="buzzer-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-pink-300">
+        <option value="">Frage auswählen…</option>
+    </select>
+    <button onclick="window.starteBuzzer()" class="bg-pink-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-pink-700 transition">
+        Buzzer starten
+    </button>
+</div>
+<!-- Quiz -->
+<div class="bg-green-50 rounded-2xl p-4">
+    <div class="font-semibold mb-2 text-green-800">Quiz</div>
+    <select id="quiz-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-green-300">
+        <option value="">Frage auswählen…</option>
+    </select>
+    <select id="quiz-richtige" class="border rounded p-1 mb-2 w-full">
+        <option value="0">A richtig</option>
+        <option value="1">B richtig</option>
+        <option value="2">C richtig</option>
+        <option value="3">D richtig</option>
+    </select>
+    <input id="quiz-timer" type="number" value="10" min="5" max="60" class="border rounded p-1 mb-2 w-full" placeholder="Quiz Zeit (Sekunden)">
+    <button onclick="window.starteQuiz()" class="bg-green-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-green-700 transition">
+        Quiz starten
+    </button>
+</div>
         </div>
         <hr class="my-4">
         <div id="admin-content" class="text-left"></div>
