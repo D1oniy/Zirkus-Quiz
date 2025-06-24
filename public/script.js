@@ -170,6 +170,10 @@ window.addEventListener("DOMContentLoaded", () => {
     if (isAdmin) {
         const buzzerSelect = document.getElementById("buzzer-frage");
         const quizSelect = document.getElementById("quiz-frage");
+        const antwortDiv = document.createElement("div");
+        antwortDiv.id = "quiz-antworten";
+        quizSelect.parentNode.insertBefore(antwortDiv, quizSelect.nextSibling);
+
         FRAGEN.forEach((q, idx) => {
             const opt1 = document.createElement("option");
             opt1.value = idx;
@@ -180,6 +184,16 @@ window.addEventListener("DOMContentLoaded", () => {
             opt2.value = idx;
             opt2.textContent = q.frage;
             quizSelect.appendChild(opt2);
+        });
+
+        quizSelect.addEventListener("change", () => {
+            antwortDiv.innerHTML = "";
+            const idx = quizSelect.value;
+            if (idx !== "" && FRAGEN[idx]) {
+                antwortDiv.innerHTML = FRAGEN[idx].antworten.map(
+                    (a, i) => `<div class="mb-1"><b>${String.fromCharCode(65 + i)}:</b> ${a}</div>`
+                ).join("");
+            }
         });
     }
 });
