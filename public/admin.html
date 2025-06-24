@@ -30,12 +30,8 @@
                 <select id="quiz-frage" class="border rounded p-1 mb-2 w-full focus:ring-2 focus:ring-green-300">
                     <option value="">Frage auswählen…</option>
                 </select>
-                <select id="quiz-richtige" class="border rounded p-1 mb-2 w-full">
-                    <option value="0">A richtig</option>
-                    <option value="1">B richtig</option>
-                    <option value="2">C richtig</option>
-                    <option value="3">D richtig</option>
-                </select>
+                <div id="quiz-antworten" class="mb-2"></div>
+                <div id="quiz-richtige-anzeige" class="mb-2 font-bold text-green-700"></div>
                 <input id="quiz-timer" type="number" value="10" min="5" max="60" class="border rounded p-1 mb-2 w-full" placeholder="Quiz Zeit (Sekunden)">
                 <button onclick="window.starteQuiz()" class="bg-green-600 text-white font-bold px-4 py-2 rounded-xl w-full shadow hover:bg-green-700 transition">
                     Quiz starten
