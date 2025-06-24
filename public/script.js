@@ -69,52 +69,65 @@ if (!isAdmin) {
         socket.emit("audience-join");
     };
 
+
 // --- Live-Screen Updates ---
 socket.on("screen-update",(screen,data)=>{
     if (isAdmin) showAdmin(screen,data);
     else showAudience(screen,data);
 });
 
-// --- Publikum: Anzeige ---
-function showAudience(screen,data){
-    const c=document.getElementById("content");
-    c.innerHTML="";
-    if(barChart){ barChart.destroy(); barChart=null; }
+// ...existing code...
 
-    if(screen==="start"){
-        c.innerHTML=`<div class="font-bold text-lg">Bitte warten…</div>`;
+// --- Live-Screen Updates ---
+socket.on("screen-update", (screen, data) => {
+    if (isAdmin) showAdmin(screen, data);
+    else if (document.getElementById("content")) showAudience(screen, data);
+});
+
+// --- Publikum: Anzeige ---
+function showAudience(screen, data) {
+    const c = document.getElementById("content");
+    if (!c) return; // Prevent error if element doesn't exist
+    c.innerHTML = "";
+    if (barChart) { barChart.destroy(); barChart = null; }
+
+    if (screen === "start") {
+        c.innerHTML = `<div class="font-bold text-lg">Bitte warten…</div>`;
     }
-    if(screen==="buzzer"){
-        if(data.buzzerWinner){
-            c.innerHTML=`<div class="text-2xl font-bold">${data.buzzerWinner.name}</div>`;
+    if (screen === "buzzer") {
+        if (data.buzzerWinner) {
+            c.innerHTML = `<div class="text-2xl font-bold">${data.buzzerWinner.name || data.buzzerWinner.id}</div>`;
         } else {
-            c.innerHTML=`<div>${data.frage||""}</div>
+            c.innerHTML = `<div>${data.frage || ""}</div>
                 <button onclick="socket.emit('buzzer')" class="bg-red-500 text-white py-2 px-4 rounded">BUZZER!</button>`;
         }
     }
-    if(screen==="quiz"){
-        let abg=data.abgestimmt||false;
-        c.innerHTML=`<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
-        const ansDiv=document.getElementById("ans");
-        data.antworten.forEach((a,i)=>{
-            const b=document.createElement("button");
-            b.innerText=a; b.className="m-1 bg-blue-500 text-white py-2 px-3 rounded";
-            if(abg) b.disabled=true;
-            b.onclick=()=>{
-                socket.emit("quiz-answer",i);
-                b.disabled=true;
-            };
-            ansDiv.appendChild(b);
-        });
-        if(data.showSolution){
-            c.innerHTML+=`<div class="mt-4 text-green-700 font-bold">Richtig: ${["A","B","C","D"][data.richtige]}</div>`;
+    if (screen === "quiz") {
+        let abg = data.abgestimmt || false;
+        c.innerHTML = `<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
+        const ansDiv = document.getElementById("ans");
+        if (data.antworten) {
+            data.antworten.forEach((a, i) => {
+                const b = document.createElement("button");
+                b.innerText = a; b.className = "m-1 bg-blue-500 text-white py-2 px-3 rounded";
+                if (abg) b.disabled = true;
+                b.onclick = () => {
+                    socket.emit("quiz-answer", i);
+                    b.disabled = true;
+                };
+                ansDiv.appendChild(b);
+            });
+        }
+        if (data.showSolution) {
+            c.innerHTML += `<div class="mt-4 text-green-700 font-bold">Richtig: ${["A", "B", "C", "D"][data.richtige]}</div>`;
         }
     }
 }
 
 // --- Admin: Anzeige ---
-function showAdmin(screen,data){
-    const c=document.getElementById("admin-content");
-    c.innerHTML=`<div class="mb-2 text-sm text-gray-600">Screen: ${screen}</div>`;
+function showAdmin(screen, data) {
+    const c = document.getElementById("admin-content");
+    if (!c) return;
+    c.innerHTML = `<div class="mb-2 text-sm text-gray-600">Screen: ${screen}</div>`;
     // (wer soll angezeigt werden, analog Pub.)
 }
