@@ -1,93 +1,113 @@
 const socket = io();
-const isAdmin = location.pathname.includes("admin");
-let myName, mySektor;
+const isAdmin = window.location.pathname.includes("admin");
+let userName = "";
+let userSektor = null;
+let sektorBtns = null;
+const sektorColors = ["#ef4444","#2563eb","#facc15","#22c55e"];
+let sektorNames = ["Sektor 1","Sektor 2","Sektor 3","Sektor 4"];
+let barChart = null;
 
-// Liste der Fragen für Admin-Dropdowns
-const fragen = [
-  "Wie viele verschiedene Plattformen ...", 
-  "Was war 2020 DAS Symbol ...",
-  /* hier alle 14 Fragen in gleicher Reihenfolge wie im server.js */
-];
-
-// --- ADMIN ---
+// --- Admin-Funktionen ---
 if (isAdmin) {
-  const buz = document.getElementById("buzzerSel");
-  const mcq = document.getElementById("quizSel");
-  fragen.forEach((f,i)=>{
-    buz.append(new Option(f,i));
-    mcq.append(new Option(f,i));
-  });
-  window.setScreen = mode => socket.emit("admin-set",{mode});
-  window.startBuzzer = () => {
-    socket.emit("admin-set",{mode:"buzzer",questionIdx:+buz.value});
-  };
-  window.startQuiz = () => {
-    socket.emit("admin-set",{mode:"quiz",questionIdx:+mcq.value,timer:+timer.value});
-  };
+    window.setScreen = screen => socket.emit("set-screen",{screen});
+    window.starteBuzzer = () => {
+        const frage = document.getElementById("buzzer-frage").value.trim();
+        socket.emit("set-screen",{screen:"buzzer", d: 0}); // Use 'd' to match server
+    };
+    window.starteQuiz = () => {
+        const frage = document.getElementById("quiz-frage").value;
+        const antworten = [
+            document.getElementById("quiz-a0").value,
+            document.getElementById("quiz-a1").value,
+            document.getElementById("quiz-a2").value,
+            document.getElementById("quiz-a3").value
+        ];
+        const richtige = Number(document.getElementById("quiz-richtige").value);
+        const timer = Number(document.getElementById("quiz-timer").value)||10;
+        socket.emit("set-screen",{screen:"quiz", d: 0}); // Use 'd' to match server
+    };
 }
 
-// --- PUBLIKUM ---
-else {
-  // Sektoren rendern
-  socket.on("sektoren", arr=>{
-    const cont = document.getElementById("sektoren");
-    arr.forEach((s,i)=>{
-      const b = document.createElement("button");
-      b.innerText = s;
-      b.className = "px-3 py-1 font-bold text-white rounded";
-      b.style.background = ["#ef4444","#2563eb","#22c55e","#facc15"][i];
-      b.onclick = ()=>{
-        mySektor = i;
-        Array.from(cont.children).forEach(x=>x.classList.remove("ring-4","ring-pink-300"));
-        b.classList.add("ring-4","ring-pink-300");
-        join.disabled = !(nameInput.value.trim() && mySektor!=null);
-      };
-      cont.append(b);
+// --- Publikum: Name & Sektor ---
+if (!isAdmin) {
+    sektorBtns = document.getElementById("sektorBtns");
+    socket.on("update-sektoren", names => {
+        sektorNames = names;
+        sektorBtns.innerHTML = "";
+        names.forEach((n,i)=>{
+            const btn = document.createElement("button");
+            btn.innerText = n;
+            btn.style.background = sektorColors[i];
+            btn.className = "text-white font-bold py-2 px-3 rounded-xl shadow transition";
+            btn.onclick = ()=>{
+                userSektor = i;
+                document.querySelectorAll("#sektorBtns button").forEach(b=>b.classList.remove("ring-4","ring-pink-300"));
+                btn.classList.add("ring-4","ring-pink-300");
+                document.getElementById("startBtn").disabled = !document.getElementById("audience-name").value.trim();
+            };
+            sektorBtns.appendChild(btn);
+        });
     });
-  });
+    document.getElementById("audience-name").oninput = ()=>{
+        document.getElementById("startBtn").disabled = !(document.getElementById("audience-name").value.trim() && userSektor!==null);
+    };
+    document.getElementById("startBtn").onclick = ()=>{
+        userName = document.getElementById("audience-name").value.trim()||"Anonym";
+        socket.emit("register",{name:userName,sektor:userSektor});
+        document.getElementById("startArea").style.display="none";
+        document.getElementById("content").innerHTML="<b>Bitte warten…</b>";
+        socket.emit("audience-join");
+    };
+}
 
-  // Name & Join
-  const nameInput = document.getElementById("name");
-  const join = document.getElementById("join");
-  nameInput.oninput = ()=>{ join.disabled = !(nameInput.value.trim() && mySektor!=null); };
-  join.onclick = ()=>{
-    myName = nameInput.value.trim()||"Anonym";
-    socket.emit("register",{name:myName,sektor:mySektor});
-  };
-  socket.on("registered",()=>{
-    document.getElementById("start").classList.add("hidden");
-    document.getElementById("wait").classList.remove("hidden");
-    socket.emit("audience-join");
-  });
+// --- Live-Screen Updates ---
+socket.on("screen-update",(screen,data)=>{
+    if (isAdmin) showAdmin(screen,data);
+    else showAudience(screen,data);
+});
 
-  // Anzeige wechseln
-  socket.on("update",(mode,data)=>{
-    ["wait","buzzer","quiz"].forEach(id=>document.getElementById(id).classList.add("hidden"));
-    if(mode==="start") document.getElementById("wait").classList.remove("hidden");
-    if(mode==="buzzer") showBuzzer(data);
-    if(mode==="quiz")   showQuiz(data);
-  });
+// --- Publikum: Anzeige ---
+function showAudience(screen,data){
+    const c=document.getElementById("content");
+    c.innerHTML="";
+    if(barChart){ barChart.destroy(); barChart=null; }
 
-  function showBuzzer({frage,buzzerWinner}){
-    document.getElementById("bfrage").innerText=frage;
-    document.getElementById("buzzRes").innerText=buzzerWinner||"";
-    const btn = document.getElementById("buzzBtn");
-    btn.disabled = !!buzzerWinner;
-    btn.onclick = ()=>{ socket.emit("buzz"); btn.disabled=true; };
-    document.getElementById("buzzer").classList.remove("hidden");
-  }
-  function showQuiz({frage,antworten,richtige,showSolution=false}){
-    document.getElementById("qfrage").innerText=frage;
-    const cont = document.getElementById("answers");
-    cont.innerHTML="";
-    antworten.forEach((a,i)=>{
-      if(!a) return;
-      const b=document.createElement("button");
-      b.innerText=a; b.className="bg-blue-500 text-white py-2 px-4 rounded w-full";
-      b.onclick=()=>{ socket.emit("answer",i); Array.from(cont.children).forEach(x=>x.disabled=true); };
-      cont.append(b);
-    });
-    document.getElementById("feedback").innerText = showSolution ? "Richtige Antwort: "+["A","B","C","D"][richtige] : "";
-    document.getElementById("quiz").classList.remove("hidden");
-  }
+    if(screen==="start"){
+        c.innerHTML=`<div class="font-bold text-lg">Bitte warten…</div>`;
+    }
+    if(screen==="buzzer"){
+        if(data.buzzerWinner){
+            // Show ID if name is not available
+            c.innerHTML=`<div class="text-2xl font-bold">${data.buzzerWinner.name || data.buzzerWinner.id}</div>`;
+        } else {
+            c.innerHTML=`<div>${data.frage||""}</div>
+                <button onclick="socket.emit('buzzer')" class="bg-red-500 text-white py-2 px-4 rounded">BUZZER!</button>`;
+        }
+    }
+    if(screen==="quiz"){
+        let abg=data.abgestimmt||false;
+        c.innerHTML=`<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
+        // Select ansDiv after setting innerHTML
+        const ansDiv=document.getElementById("ans");
+        data.antworten && data.antworten.forEach((a,i)=>{
+            const b=document.createElement("button");
+            b.innerText=a; b.className="m-1 bg-blue-500 text-white py-2 px-3 rounded";
+            if(abg) b.disabled=true;
+            b.onclick=()=>{
+                socket.emit("quiz-answer",i);
+                b.disabled=true;
+            };
+            ansDiv.appendChild(b);
+        });
+        if(data.showSolution){
+            c.innerHTML+=`<div class="mt-4 text-green-700 font-bold">Richtig: ${["A","B","C","D"][data.richtige]}</div>`;
+        }
+    }
+}
+
+// --- Admin: Anzeige ---
+function showAdmin(screen,data){
+    const c=document.getElementById("admin-content");
+    c.innerHTML=`<div class="mb-2 text-sm text-gray-600">Screen: ${screen}</div>`;
+    // (wer soll angezeigt werden, analog Pub.)
 }
