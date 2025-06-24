@@ -14,6 +14,7 @@ let buzzerWinnerId = null;
 let akroVoted = {};
 let quizState = { answers: {}, done: false };
 let userInfos = {}; // speichert Name und Sektor pro Socket
+let quizEndTime = null;
 
 io.on("connection", sock => {
     sock.emit("update-sektoren", SEKTOR_NAMES);
@@ -23,7 +24,20 @@ io.on("connection", sock => {
         userInfos[sock.id] = { name: d.name, sektor: d.sektor };
     });
 
-    sock.on("audience-join", () => sock.emit("screen-update", currentScreen, getData(sock.id)));
+    sock.on("audience-join", () => {
+        // Sende immer das aktuelle endTime beim Quiz, falls noch offen
+        if (currentScreen === "quiz" && quizEndTime) {
+            sock.emit("screen-update", "quiz", {
+                frage: questions[0].frage,
+                antworten: questions[0].antworten,
+                endTime: quizEndTime
+            });
+        } else if (currentScreen === "buzzer") {
+            sock.emit("screen-update", "buzzer", { frage: questions[0]?.frage });
+        } else {
+            sock.emit("screen-update", currentScreen, getData(sock.id));
+        }
+    });
 
     sock.on("set-screen", ({ screen, data }) => {
         currentScreen = screen;
@@ -31,14 +45,15 @@ io.on("connection", sock => {
             buzzerWinnerId = null;
             questions[0] = data;
             currentIdx = 0;
+            quizEndTime = null;
             io.emit("screen-update", "buzzer", { frage: data.frage });
         }
         if (screen === "quiz") {
             questions[0] = data;
             currentIdx = 0;
             quizState = { answers: {}, done: false };
-            const endTime = Date.now() + ((data.timer || 20) * 1000) + 1000; // +1 Sekunde für "21" Start
-            io.emit("screen-update", "quiz", { frage: data.frage, antworten: data.antworten, endTime });
+            quizEndTime = Date.now() + ((data.timer || 20) * 1000);
+            io.emit("screen-update", "quiz", { frage: data.frage, antworten: data.antworten, endTime: quizEndTime });
             setTimeout(() => {
                 quizState.done = true;
                 const sektorCorrect = [0, 0, 0, 0];
@@ -55,9 +70,11 @@ io.on("connection", sock => {
                     showSolution: true,
                     sektorCorrect
                 });
-            }, (data.timer || 20) * 1000 + 1000); // +1 Sekunde für "21" Start
+                quizEndTime = null;
+            }, (data.timer || 20) * 1000);
         }
         if (screen === "start") {
+            quizEndTime = null;
             io.emit("screen-update", "start", {});
         }
     });
@@ -81,7 +98,7 @@ io.on("connection", sock => {
                     frage: questions[currentIdx].frage,
                     antworten: questions[currentIdx].antworten,
                     abgestimmt: true,
-                    endTime: getQuizEndTime()
+                    endTime: quizEndTime
                 });
             }
         }
@@ -89,17 +106,7 @@ io.on("connection", sock => {
 });
 
 function getData(sockid) {
-    // Kann für spätere Features genutzt werden
     return {};
-}
-
-function getQuizEndTime() {
-    // Ermittle das aktuelle EndTime für Quiz, falls jemand später joint
-    if (questions[0] && questions[0].timer) {
-        // Suche nach dem letzten gesendeten endTime
-        return Date.now() + ((questions[0].timer || 20) * 1000);
-    }
-    return undefined;
 }
 
 http.listen(5500);
