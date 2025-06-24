@@ -401,6 +401,8 @@ function startConfetti() {
             if (p.y > canvas.height) p.y = -10;
         }
         frame++;
-        if (frame < 120) requestAnimationFrame(draw);
-        else ctx.clearRect(0,0,canvas.width,canvas.height);
+            if (frame < 120) requestAnimationFrame(draw);
+            else ctx.clearRect(0,0,canvas.width,canvas.height);
+        }
+        draw();
     }
