@@ -8,6 +8,13 @@ let sektorNames = ["Sektor 1","Sektor 2","Sektor 3","Sektor 4"];
 let barChart = null;
 let registered = false;
 
+const buttonColors = [
+    "bg-blue-500 hover:bg-blue-600",   // A
+    "bg-yellow-400 hover:bg-yellow-500 text-black", // B
+    "bg-green-500 hover:bg-green-600", // C
+    "bg-pink-500 hover:bg-pink-600"    // D
+];
+
 const FRAGEN = [
     {
         frage: "Wie viele verschiedene Plattformen mussten Eltern in der Schulzeit ihres Kindes verstehen lernen?",
@@ -302,21 +309,20 @@ function showAudience(screen, data) {
 
         if (data.antworten) {
             c.innerHTML += `<div class="font-bold mb-2">${data.frage}</div>
-            <div id="ans" class="grid grid-cols-2 gap-2 mb-2"></div>`;
+            <div id="ans" class="grid grid-cols-2 gap-2 mb-2"></div>
+            <div id="feedback"></div>`;
             const ansDiv = document.getElementById("ans");
+            const feedbackDiv = document.getElementById("feedback");
             data.antworten.forEach((a, i) => {
                 const b = document.createElement("button");
                 b.innerHTML = `<b>${String.fromCharCode(65 + i)}:</b> ${a}`;
-                b.className = "bg-blue-500 text-white py-2 px-3 rounded text-left";
+                b.className = buttonColors[i % buttonColors.length] + " py-2 px-3 rounded text-left font-bold";
                 if (abg) b.disabled = true;
                 b.onclick = () => {
                     socket.emit("quiz-answer", i);
                     b.disabled = true;
-                    let fb = document.createElement("div");
-                    fb.className = "mt-2 text-green-700 font-bold";
-                    fb.innerText = "Deine Antwort wurde gewertet!";
-                    ansDiv.appendChild(fb);
-                    setTimeout(() => fb.remove(), 1500);
+                    feedbackDiv.innerHTML = `<div class="mt-2 text-green-700 font-bold">Eure Antwort wurde gewertet!</div>`;
+                    setTimeout(() => feedbackDiv.innerHTML = "", 1500);
                 };
                 ansDiv.appendChild(b);
             });
