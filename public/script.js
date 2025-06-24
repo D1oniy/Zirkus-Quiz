@@ -6,6 +6,8 @@ let sektorBtns = null;
 const sektorColors = ["#ef4444","#2563eb","#facc15","#22c55e"];
 let sektorNames = ["Sektor 1","Sektor 2","Sektor 3","Sektor 4"];
 let barChart = null;
+let registered = false;
+
 const FRAGEN = [
     {
         frage: "Wie viele verschiedene Plattformen mussten Eltern in der Schulzeit ihres Kindes verstehen lernen?",
@@ -226,12 +228,14 @@ if (!isAdmin && document.getElementById("sektorBtns")) {
         socket.emit("register", { name: userName, sektor: userSektor });
         document.getElementById("startArea").style.display = "none";
         document.getElementById("content").innerHTML = "<b>Bitte warten…</b>";
+        registered = true;
         socket.emit("audience-join");
     };
 }
 
 // --- Live-Screen Updates ---
 socket.on("screen-update", (screen, data) => {
+    if (!isAdmin && !registered) return;
     if (isAdmin && document.getElementById("admin-content")) showAdmin(screen, data);
     else if (!isAdmin && document.getElementById("content")) showAudience(screen, data);
 });
@@ -262,7 +266,6 @@ function showAudience(screen, data) {
     }
     if (screen === "buzzer") {
         if (data.buzzerWinner) {
-            // Gewinner-View
             if (socket.id === data.buzzerWinner.id) {
                 c.innerHTML = `
                     <div class="text-2xl font-bold text-green-600 mb-4 animate-bounce">Du warst am schnellsten am Buzzer!<br>Stehe auf und sage die Antwort!</div>
@@ -270,7 +273,6 @@ function showAudience(screen, data) {
                 `;
                 startConfetti();
             } else {
-                // Für alle anderen: Gewinner-Anzeige in Sektor-Farbe
                 const sektorIdx = data.buzzerWinner.sektor ?? 0;
                 const sektorColor = sektorColors[sektorIdx] || "#888";
                 c.innerHTML = `
@@ -281,7 +283,6 @@ function showAudience(screen, data) {
                 `;
             }
         } else {
-            // Runder Buzzer
             showTimer(data.endTime, c);
             c.innerHTML += `
                 <div class="mb-6 text-xl font-bold">${data.frage || ""}</div>
@@ -296,19 +297,26 @@ function showAudience(screen, data) {
     }
     if (screen === "quiz") {
         let abg = data.abgestimmt || false;
-        if (!data.showSolution) showTimer(data.endTime, c);
-        c.innerHTML += `<div class="font-bold mb-2">${data.frage}</div><div id="ans"></div>`;
-        const ansDiv = document.getElementById("ans");
+        c.innerHTML = "";
+        showTimer(data.endTime, c);
+
         if (data.antworten) {
+            c.innerHTML += `<div class="font-bold mb-2">${data.frage}</div>
+            <div id="ans" class="grid grid-cols-2 gap-2 mb-2"></div>`;
+            const ansDiv = document.getElementById("ans");
             data.antworten.forEach((a, i) => {
                 const b = document.createElement("button");
-                b.innerText = a;
-                b.className = "m-1 bg-blue-500 text-white py-2 px-3 rounded";
+                b.innerHTML = `<b>${String.fromCharCode(65 + i)}:</b> ${a}`;
+                b.className = "bg-blue-500 text-white py-2 px-3 rounded text-left";
                 if (abg) b.disabled = true;
                 b.onclick = () => {
                     socket.emit("quiz-answer", i);
                     b.disabled = true;
-                    ansDiv.innerHTML += `<div class="mt-2 text-green-700 font-bold">Deine Antwort wurde gewertet!</div>`;
+                    let fb = document.createElement("div");
+                    fb.className = "mt-2 text-green-700 font-bold";
+                    fb.innerText = "Deine Antwort wurde gewertet!";
+                    ansDiv.appendChild(fb);
+                    setTimeout(() => fb.remove(), 1500);
                 };
                 ansDiv.appendChild(b);
             });
@@ -318,7 +326,6 @@ function showAudience(screen, data) {
             data.sektorCorrect.forEach((count, idx) => {
                 c.innerHTML += `<div style="color:${sektorColors[idx]};font-weight:bold">${sektorNames[idx]}: ${count}</div>`;
             });
-            // Sieger-Sektor hervorheben
             const max = Math.max(...data.sektorCorrect);
             const sieger = data.sektorCorrect.map((v, i) => v === max ? sektorNames[i] : null).filter(Boolean);
             if (max > 0) {
@@ -363,7 +370,6 @@ function showAdmin(screen, data) {
 }
 
 function startConfetti() {
-    // Simple Confetti (nur für Demo, für mehr Effekte: canvas-confetti npm oder CDN)
     const canvas = document.getElementById("confetti-canvas");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
