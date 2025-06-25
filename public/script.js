@@ -3,7 +3,7 @@ const isAdmin = window.location.pathname.includes("admin");
 let userName = "";
 let userSektor = null;
 let sektorBtns = null;
-const sektorColors = ["#ef4444","#2563eb","#facc15","#22c55e"];
+const sektorColors = ["#fde047", "#22c55e", "#ef4444", "#2563eb"]; // Gelb, Grün, Rot, Blau
 let sektorNames = ["Sektor 1","Sektor 2","Sektor 3","Sektor 4"];
 let barChart = null;
 let registered = false;
@@ -276,7 +276,11 @@ function showAudience(screen, data) {
     }
     if (screen === "buzzer") {
         // Frage immer anzeigen!
-        c.innerHTML += `<div class="mb-6 text-xl font-bold">${data.frage || ""}</div>`;
+        const frageDiv = document.createElement("div");
+        frageDiv.className = "mb-6 text-xl font-bold";
+        frageDiv.textContent = data.frage || "";
+        c.appendChild(frageDiv);
+
         if (data.buzzerWinner) {
             if (socket.id === data.buzzerWinner.id) {
                 c.innerHTML += `
@@ -295,27 +299,38 @@ function showAudience(screen, data) {
                 `;
             }
         } else {
-            c.innerHTML += `
-                <button id="buzzerBtn"
-                    class="w-40 h-40 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 transition text-white text-3xl font-bold shadow-2xl flex items-center justify-center mx-auto animate-pulse"
-                    style="box-shadow: 0 0 40px 10px #f87171;">
-                    BUZZER!
-                </button>
-            `;
-            document.getElementById("buzzerBtn").onclick = () => socket.emit("buzzer");
+            const buzzerBtn = document.createElement("button");
+            buzzerBtn.id = "buzzerBtn";
+            buzzerBtn.className = "w-40 h-40 rounded-full bg-red-500 hover:bg-red-600 active:scale-95 transition text-white text-3xl font-bold shadow-2xl flex items-center justify-center mx-auto animate-pulse";
+            buzzerBtn.style.boxShadow = "0 0 40px 10px #f87171";
+            buzzerBtn.textContent = "BUZZER!";
+            buzzerBtn.onclick = () => socket.emit("buzzer");
+            c.appendChild(buzzerBtn);
         }
     }
     if (screen === "quiz") {
         let abg = data.abgestimmt || false;
-        c.innerHTML = "";
-        showTimer(data.endTime, c);
+        // Timer-Container
+        const timerDiv = document.createElement("div");
+        c.appendChild(timerDiv);
+        showTimer(data.endTime, timerDiv);
+
+        // Restlicher Quiz-Inhalt
+        const frageDiv = document.createElement("div");
+        frageDiv.className = "font-bold mb-2";
+        frageDiv.textContent = data.frage;
+        c.appendChild(frageDiv);
+
+        const ansDiv = document.createElement("div");
+        ansDiv.id = "ans";
+        ansDiv.className = "grid grid-cols-2 gap-2 mb-2";
+        c.appendChild(ansDiv);
+
+        const feedbackDiv = document.createElement("div");
+        feedbackDiv.id = "feedback";
+        c.appendChild(feedbackDiv);
 
         if (data.antworten) {
-            c.innerHTML += `<div class="font-bold mb-2">${data.frage}</div>
-            <div id="ans" class="grid grid-cols-2 gap-2 mb-2"></div>
-            <div id="feedback"></div>`;
-            const ansDiv = document.getElementById("ans");
-            const feedbackDiv = document.getElementById("feedback");
             data.antworten.forEach((a, i) => {
                 const b = document.createElement("button");
                 b.innerHTML = `<b>${String.fromCharCode(65 + i)}:</b> ${a}`;
@@ -331,14 +346,24 @@ function showAudience(screen, data) {
             });
         }
         if (data.showSolution && data.sektorCorrect) {
-            c.innerHTML += `<div class="mt-4 font-bold">Korrekte Antworten pro Sektor:</div>`;
+            const resultDiv = document.createElement("div");
+            resultDiv.className = "mt-4 font-bold";
+            resultDiv.innerHTML = "Korrekte Antworten pro Sektor:";
+            c.appendChild(resultDiv);
             data.sektorCorrect.forEach((count, idx) => {
-                c.innerHTML += `<div style="color:${sektorColors[idx]};font-weight:bold">${sektorNames[idx]}: ${count}</div>`;
+                const sDiv = document.createElement("div");
+                sDiv.style.color = sektorColors[idx];
+                sDiv.style.fontWeight = "bold";
+                sDiv.textContent = `${sektorNames[idx]}: ${count}`;
+                c.appendChild(sDiv);
             });
             const max = Math.max(...data.sektorCorrect);
             const sieger = data.sektorCorrect.map((v, i) => v === max ? sektorNames[i] : null).filter(Boolean);
             if (max > 0) {
-                c.innerHTML += `<div class="mt-2 text-green-700 font-bold">Sieger-Sektor: ${sieger.join(", ")}</div>`;
+                const siegerDiv = document.createElement("div");
+                siegerDiv.className = "mt-2 text-green-700 font-bold";
+                siegerDiv.textContent = `Sieger-Sektor: ${sieger.join(", ")}`;
+                c.appendChild(siegerDiv);
             }
         }
     }
@@ -406,5 +431,5 @@ function startConfetti() {
         if (frame < 120) requestAnimationFrame(draw);
         else ctx.clearRect(0,0,canvas.width,canvas.height);
     }
-            draw();
-    }
+    draw();
+}
